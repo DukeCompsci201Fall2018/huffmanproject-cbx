@@ -62,7 +62,7 @@ public class HuffProcessor {
 
 		int bits = in.readBits(BITS_PER_INT);
 		if(bits != HUFF_TREE) {
-			throw new HuffException("illegal header starts with "+bits);
+			throw new HuffException("");
 		}
 				
 		HuffNode root = readTreeHeader(in);
@@ -75,7 +75,7 @@ public class HuffProcessor {
 		while(true) {
 			int bits = in.readBits(1);
 			if(bits == -1) {
-				throw new HuffException("bad input, no PSEUDO_EOF");
+				break;
 			}
 			else {
 				if(bits == 0) current = current.myLeft;
@@ -83,7 +83,7 @@ public class HuffProcessor {
 				
 				if(current.myLeft == null && current.myRight == null) {
 					if(current.myValue == PSEUDO_EOF)
-						break; // out of loop
+						return; // out of loop
 					
 					else {
 						out.writeBits(BITS_PER_WORD, current.myValue);
@@ -97,12 +97,12 @@ public class HuffProcessor {
 
 	private HuffNode readTreeHeader(BitInputStream in) {
 		int bit = in.readBits(1);
-		if(bit == -1) throw new HuffException("reading bits fails. readBits method returns -1");
+		//if(bit == -1) throw new HuffException("reading bits fails. readBits method returns -1");
 		
 		if(bit == 0) {
 			HuffNode left = readTreeHeader(in);
 			HuffNode right = readTreeHeader(in);
-			return new HuffNode(0,0,left,right);
+			return new HuffNode(-1,0,left,right);
 		}
 		else {
 			int value = BITS_PER_WORD + 1;
