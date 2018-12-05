@@ -133,7 +133,7 @@ public class HuffProcessor {
 
 	private HuffNode readTreeHeader(BitInputStream in) {
 		int bit = in.readBits(1);
-		if(bit == -1) throw new HuffException("reading bits fails. readBits method returns -1");
+		if(bit == -1) throw new HuffException("bad input, no PSEUDO_EOF");
 		
 		if(bit == 0) {
 			HuffNode left = readTreeHeader(in);
