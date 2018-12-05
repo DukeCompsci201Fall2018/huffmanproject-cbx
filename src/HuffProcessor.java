@@ -71,7 +71,6 @@ public class HuffProcessor {
 	}
 
 	private void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
-		root = readTreeHeader(in);
 		HuffNode current = root;
 		while(true) {
 			int bits = in.readBits(1);
