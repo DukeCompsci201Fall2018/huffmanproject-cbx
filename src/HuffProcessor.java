@@ -75,7 +75,7 @@ public class HuffProcessor {
 		while(true) {
 			int bits = in.readBits(1);
 			if(bits == -1) {
-				break;
+				throw new HuffException("bad input, no PSEUDO_EOF");
 			}
 			else {
 				if(bits == 0) current = current.myLeft;
@@ -83,7 +83,7 @@ public class HuffProcessor {
 				
 				if(current.myLeft == null && current.myRight == null) {
 					if(current.myValue == PSEUDO_EOF)
-						return; // out of loop
+						break; // out of loop
 					
 					else {
 						out.writeBits(BITS_PER_WORD, current.myValue);
