@@ -50,7 +50,7 @@ public class HuffProcessor {
 		out.close();
 	}
 	/**
-	 * Decompresses a file. Output file must be identical bit-by-bit to the
+	 * Uncompress a file. Output file must be identical bit-by-bit to the
 	 * original.
 	 *
 	 * @param in
