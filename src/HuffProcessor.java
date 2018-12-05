@@ -75,7 +75,7 @@ public class HuffProcessor {
 		while(true) {
 			int bits = in.readBits(1);
 			if(bits == -1) {
-				throw new HuffException("bad input, no PSEUDO_EOF");
+				throw new HuffException("illegal header starts with "+bits);
 			}
 			else {
 				if(bits == 0) current = current.myLeft;
