@@ -83,7 +83,7 @@ public class HuffProcessor {
 				
 				if(current.myLeft == null && current.myRight == null) {
 					if(current.myValue == PSEUDO_EOF)
-						break; // out of loop
+						return; // out of loop
 					
 					else {
 						out.writeBits(BITS_PER_WORD, current.myValue);
@@ -96,15 +96,17 @@ public class HuffProcessor {
 	}
 
 	private HuffNode readTreeHeader(BitInputStream in) {
-		if(in.readBits(1) == -1) throw new HuffException("illegal header starts with "+in.readBits(1));
+		int bit = in.readBits(0);
+		if(bit == -1) throw new HuffException("illegal header starts with "+in.readBits(1));
 		
-		if(in.readBits(1) == 0) {
+		if(bit == 0) {
 			HuffNode left = readTreeHeader(in);
 			HuffNode right = readTreeHeader(in);
 			return new HuffNode(0,0,left,right);
 		}
 		else {
-			return new HuffNode(in.readBits(BITS_PER_WORD+1), 0);
+			int value = BITS_PER_WORD + 1;
+			return new HuffNode(value, 0, null, null);
 		}
 	}
 }
