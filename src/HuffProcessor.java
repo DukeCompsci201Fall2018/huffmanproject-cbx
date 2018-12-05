@@ -64,34 +64,41 @@ public class HuffProcessor {
 		if(bits != HUFF_TREE) {
 			throw new HuffException("illegal header starts with "+bits);
 		}
-				
+		
 		HuffNode root = readTreeHeader(in);
 		readCompressedBits(root,in,out);
 		out.close();
 	}
 
 	private void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
-		HuffNode current = root;
-		while(true) {
-			int bits = in.readBits(1);
-			if(bits == -1) {
-				throw new HuffException("illegal header starts with "+bits);
-			}
-			else {
-				if(bits == 0) current = current.myLeft;
-				else current = current.myRight;
-				
-				if(current.myLeft == null && current.myRight == null) {
-					if(current.myValue == PSEUDO_EOF)
-						break; // out of loop
-					
-					else {
-						out.writeBits(BITS_PER_WORD, current.myValue);
-						current = root; // start back after leaf
-					}
-				}
-			}
-		}
+	       int bits;
+	       HuffNode current = root;   // root of tree, constructed from header data
+	       
+	       while (true) {
+	           bits = in.readBits(1);
+	           if (bits == -1) {
+	               throw new HuffException("bad input, no PSEUDO_EOF");
+	           }
+	           else { 
+
+	               // use the zero/one value of the bit read
+	               // to traverse Huffman coding tree
+	               // if a leaf is reached, decode the character and print UNLESS
+	               // the character is pseudo-EOF, then decompression done
+
+	               if (bits == 0) current = current.myLeft; // read a 0, go left
+	               else current = current.myRight;                                 // read a 1, go right
+
+	               if (current.myLeft == null && current.myRight == null) { // at leaf!
+	                   if (current.myValue == PSEUDO_EOF) 
+	                       break;   // out of loop
+	                   else {
+	                       out.writeBits(BITS_PER_WORD, current.myValue);
+	                       current = root; // start back after leaf
+	                   }
+	               }
+	           }
+	       }
 		
 	}
 
