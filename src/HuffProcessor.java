@@ -62,11 +62,11 @@ public class HuffProcessor {
 
 		int bits = in.readBits(BITS_PER_INT);
 		if(bits != HUFF_TREE) {
-			throw new HuffException("");
+			throw new HuffException("illegal header starts with "+bits);
 		}
 				
 		HuffNode root = readTreeHeader(in);
-		readCompressedBits(root, in, out);
+		readCompressedBits(root,in,out);
 		out.close();
 	}
 
@@ -102,7 +102,7 @@ public class HuffProcessor {
 		if(bit == 0) {
 			HuffNode left = readTreeHeader(in);
 			HuffNode right = readTreeHeader(in);
-			return new HuffNode(-1,0,left,right);
+			return new HuffNode(0,0,left,right);
 		}
 		else {
 			int value = BITS_PER_WORD + 1;
