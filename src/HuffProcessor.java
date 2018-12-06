@@ -102,14 +102,14 @@ public class HuffProcessor {
 	}
 
 	private void readCompressedBits(HuffNode root, BitInputStream in, BitOutputStream out) {
-	       int bits;
 	       HuffNode current = root;   // root of tree, constructed from header data
-	       
+	       int bits;
 	       while (true) {
 	           bits = in.readBits(1);
-	           if (bits == -1) {
-	               throw new HuffException("bad input, no PSEUDO_EOF");
-	           }
+	     
+	   			if(bits == -1) {
+	   				throw new HuffException("bad input, no PSEUDO_EOF");
+	   			}
 	           else { 
 
 	               // use the zero/one value of the bit read
@@ -143,8 +143,10 @@ public class HuffProcessor {
 			return new HuffNode(0,0,left,right);
 		}
 		else {
+
 			int value = BITS_PER_WORD + 1;
-			return new HuffNode(value, 0, null, null);
+			int skdjjf = in.readBits(value);
+			return new HuffNode(skdjjf, 0, null, null);
 		}
 	}
 }
