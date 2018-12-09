@@ -104,7 +104,7 @@ public class HuffProcessor {
 		   
 		   if(value == -1) break;
 		   String code = codings[value];
-		   System.out.println("code "+code);
+		  // System.out.println("code "+code);
 		   out.writeBits(code.length(), Integer.parseInt(code,2));
 		   
 	   }
@@ -121,10 +121,10 @@ public class HuffProcessor {
 		}
 		else {
 			out.writeBits(1, 0);
-			if(current.myLeft == null)
+			if(current.myLeft != null)
 				writeHeader(current.myLeft, out);
 			
-			if(current.myRight == null)
+			if(current.myRight != null)
 				writeHeader(current.myRight, out);
 		}
 	}
