@@ -87,7 +87,6 @@ public class HuffProcessor {
 			}
 		}
 		
-		//pq.add(new HuffNode(PSEUDO_EOF, 0));
 		while(pq.size() > 1) {
 			HuffNode left = pq.remove();
 			HuffNode right = pq.remove();
@@ -107,7 +106,6 @@ public class HuffProcessor {
 		   
 		   if(value == -1) break;
 		   String code = codings[value];
-		//   System.out.println(code);
 		   out.writeBits(code.length(), Integer.parseInt(code,2));
 		   
 	   }
@@ -134,7 +132,6 @@ public class HuffProcessor {
 
 	private String[] makeCodingsFromTree(HuffNode root) {
 		String[] encodings = new String[ALPH_SIZE+1];
-		//System.out.print("AB " + ALPH_SIZE);
 		codingHelper(root, "", encodings);
 		
 		return encodings;
@@ -145,9 +142,7 @@ public class HuffProcessor {
 		
 		if(root.myLeft == null && root.myRight == null) {
 			encodings[root.myValue] = path;
-		
-		//	System.out.println(arrayList);
-			//System.out.print("coding helper: " + encodings[root.myValue]);
+	
 			return;
 		}
 		
