@@ -34,7 +34,8 @@ public class HuffProcessor {
 	public HuffProcessor(int debug) {
 		myDebugLevel = debug;
 	}
-
+	
+	
 	/**
 	 * Compresses a file. Process must be reversible and loss-less.
 	 *
@@ -78,7 +79,8 @@ public class HuffProcessor {
 	
 	private HuffNode makeTreeFromCounts(int[] counts) {
 		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
-		
+		// HuffProcessor hp = new HuffProcessor(HuffProcessor.DEBUG_HIGH);
+
 		for(int i=0; i<ALPH_SIZE+1; i++) {	
 			if(counts[i] != 0) {
 				pq.add(new HuffNode(i,counts[i], null, null));
@@ -93,6 +95,11 @@ public class HuffProcessor {
 			// create new HuffNode t with weight from
 			// left.weight+right.weight and left, right subtrees
 			pq.add(t);
+		}
+		 HuffProcessor hp  = new HuffProcessor(4);
+		if(myDebugLevel >= DEBUG_HIGH) 
+		{
+			System.out.printf("pq created with %d nodes\n", pq.size());
 		}
 		HuffNode root =	pq.remove();
 		return root;
@@ -138,7 +145,7 @@ public class HuffProcessor {
 
 
 	private void codingHelper(HuffNode root, String path, String[] encodings) {
-		
+
 		if(root.myLeft == null && root.myRight == null) {
 			encodings[root.myValue] = path;
 			return;
