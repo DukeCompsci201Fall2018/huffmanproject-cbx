@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.PriorityQueue;
 
 /**
@@ -46,7 +48,7 @@ public class HuffProcessor {
 		int[] counts = readForCounts(in);
 		HuffNode root = makeTreeFromCounts(counts);
 		String[] codings = makeCodingsFromTree(root);
-	
+		
 		out.writeBits(BITS_PER_INT, HUFF_TREE);
 		writeHeader(root, out);
 		
@@ -63,12 +65,13 @@ public class HuffProcessor {
 	 */
 	private int[] readForCounts(BitInputStream in) {
 		int[] freq = new int[ALPH_SIZE+1];
+		System.out.println();
 		freq[PSEUDO_EOF] = 1;
 		
 		while (true){
 			int val = in.readBits(BITS_PER_WORD);
 			if (val == -1) break;
-			freq[val] += 1;
+			freq[val]++;
 		}
 		in.reset();
 		return freq;
@@ -76,14 +79,15 @@ public class HuffProcessor {
 	
 	private HuffNode makeTreeFromCounts(int[] counts) {
 		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
-		
-		for(int i=0; i<ALPH_SIZE; i++) {
+		System.out.println("alphsize" + ALPH_SIZE);
+		for(int i=0; i<ALPH_SIZE+1; i++) {
 			
 			if(counts[i] != 0) {
 				pq.add(new HuffNode(i,counts[i]));
 			}
 		}
-				
+		
+		//pq.add(new HuffNode(PSEUDO_EOF, 0));
 		while(pq.size() > 1) {
 			HuffNode left = pq.remove();
 			HuffNode right = pq.remove();
@@ -100,6 +104,7 @@ public class HuffProcessor {
 	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
 	   while(true) {
 		   int value = in.readBits(BITS_PER_WORD);
+		   
 		   if(value == -1) break;
 		   String code = codings[value];
 		//   System.out.println(code);
@@ -117,28 +122,37 @@ public class HuffProcessor {
 			out.writeBits(BITS_PER_WORD + 1, current.myValue);
 			return;
 		}
-		out.writeBits(1, 0);
-		writeHeader(current.myLeft, out);
-		writeHeader(current.myRight, out);
+		else {
+			out.writeBits(1, 0);
+			if(current.myLeft == null)
+				writeHeader(current.myLeft, out);
+			
+			if(current.myRight == null)
+				writeHeader(current.myRight, out);
+		}
 	}
 
 	private String[] makeCodingsFromTree(HuffNode root) {
 		String[] encodings = new String[ALPH_SIZE+1];
+		//System.out.print("AB " + ALPH_SIZE);
 		codingHelper(root, "", encodings);
+		
 		return encodings;
 	}
 
 
 	private void codingHelper(HuffNode root, String path, String[] encodings) {
+		
 		if(root.myLeft == null && root.myRight == null) {
 			encodings[root.myValue] = path;
-			
+		
+		//	System.out.println(arrayList);
 			//System.out.print("coding helper: " + encodings[root.myValue]);
 			return;
 		}
-		codingHelper(root.myRight, path + 0, encodings);
-		codingHelper(root.myRight, path + 1, encodings);
-
+		
+		codingHelper(root.myLeft, path + "0", encodings);
+		codingHelper(root.myRight, path + "1", encodings);
 	}
 
 	/**
