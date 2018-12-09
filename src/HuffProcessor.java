@@ -25,8 +25,6 @@ public class HuffProcessor {
 	public static final int DEBUG_HIGH = 4;
 	public static final int DEBUG_LOW = 1;
 	
-	private int[] freq = new int[ALPH_SIZE + 1];
-
 	public HuffProcessor() {
 		this(0);
 	}
@@ -48,13 +46,69 @@ public class HuffProcessor {
 		int[] counts = readForCounts(in);
 		HuffNode root = makeTreeFromCounts(counts);
 		String[] codings = makeCodingsFromTree(root);
-		
+	
 		out.writeBits(BITS_PER_INT, HUFF_TREE);
 		writeHeader(root, out);
 		
 		in.reset();
 		writeCompressedBits(codings,in,out);
 		out.close();
+	}
+	
+	/**
+	 * Read 8-bit chunks and using the value as an index to the array, incrementing
+	 * the frequency
+	 * @param in, compressed file represented as a BitInputStream
+	 * @return an integer array with the frequencies of the 8-bit chunks from the file
+	 */
+	private int[] readForCounts(BitInputStream in) {
+		int[] freq = new int[ALPH_SIZE+1];
+		freq[PSEUDO_EOF] = 1;
+		
+		while (true){
+			int val = in.readBits(BITS_PER_WORD);
+			if (val == -1) break;
+			freq[val] += 1;
+		}
+		in.reset();
+		return freq;
+	}
+	
+	private HuffNode makeTreeFromCounts(int[] counts) {
+		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
+		
+		for(int i=0; i<ALPH_SIZE; i++) {
+			
+			if(counts[i] != 0) {
+				pq.add(new HuffNode(i,counts[i]));
+			}
+		}
+				
+		while(pq.size() > 1) {
+			HuffNode left = pq.remove();
+			HuffNode right = pq.remove();
+			
+			HuffNode t = new HuffNode(-1, left.myWeight + right.myWeight, left, right);
+			// create new HuffNode t with weight from
+			// left.weight+right.weight and left, right subtrees
+			pq.add(t);
+		}
+		HuffNode root =	pq.remove();
+		return root;
+	}
+
+	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
+	   while(true) {
+		   int value = in.readBits(BITS_PER_WORD);
+		   if(value == -1) break;
+		   String code = codings[value];
+		//   System.out.println(code);
+		   out.writeBits(code.length(), Integer.parseInt(code,2));
+		   
+	   }
+	   String code = codings[PSEUDO_EOF];
+       out.writeBits(code.length(), Integer.parseInt(code,2));
+
 	}
 	
 	private void writeHeader(HuffNode current, BitOutputStream out) {
@@ -68,76 +122,23 @@ public class HuffProcessor {
 		writeHeader(current.myRight, out);
 	}
 
-	private void writeCompressedBits(String[] codings, BitInputStream in, BitOutputStream out) {
-	   while(true) {
-		   int bits = in.readBits(BITS_PER_WORD);
-		   if(bits == -1) break;
-		   String code = codings[bits];
-		   out.writeBits(code.length(), Integer.parseInt(code,2));
-		   code = codings[PSEUDO_EOF];
-	       out.writeBits(code.length(), Integer.parseInt(code,2));
-
-	   }
-		
-	}
-	
-	/**
-	 * Read 8-bit chunks and using the value as an index to the array, incrementing
-	 * the frequency
-	 * @param in, compressed file represented as a BitInputStream
-	 * @return an integer array with the frequencies of the 8-bit chunks from the file
-	 */
-	private int[] readForCounts(BitInputStream in) {
-		freq[PSEUDO_EOF] = 1;
-		
-		while (true){
-			int val = in.readBits(BITS_PER_WORD);
-			if (val == -1) break;
-			freq[val] += 1;
-		}
-		in.reset();
-		return freq;
-	}
-
-	 private String[] makeCodingsFromTree(HuffNode root) {
-	
+	private String[] makeCodingsFromTree(HuffNode root) {
 		String[] encodings = new String[ALPH_SIZE+1];
 		codingHelper(root, "", encodings);
 		return encodings;
-				}
+	}
+
 
 	private void codingHelper(HuffNode root, String path, String[] encodings) {
 		if(root.myLeft == null && root.myRight == null) {
 			encodings[root.myValue] = path;
+			
+			//System.out.print("coding helper: " + encodings[root.myValue]);
 			return;
 		}
-		else{
-			codingHelper(root.myLeft,path + 0,encodings);
-			codingHelper(root.myRight,path+1,encodings);
-		}
-	}
+		codingHelper(root.myRight, path + 0, encodings);
+		codingHelper(root.myRight, path + 1, encodings);
 
-	private HuffNode makeTreeFromCounts(int[] counts) {
-		PriorityQueue<HuffNode> pq = new PriorityQueue<>();
-		
-		for(int i=0; i<freq.length; i++) {
-			
-			if(freq[i] > 0) {
-				pq.add(new HuffNode(i,freq[i],null,null));
-			}
-		}
-				
-		while(pq.size() > 1) {
-			HuffNode left = pq.remove();
-			HuffNode right = pq.remove();
-			
-			HuffNode t = new HuffNode(-1, left.myWeight + right.myWeight, left, right);
-			// create new HuffNode t with weight from
-			// left.weight+right.weight and left, right subtrees
-			pq.add(t);
-		}
-		HuffNode root = pq.remove();
-		return root;
 	}
 
 	/**
